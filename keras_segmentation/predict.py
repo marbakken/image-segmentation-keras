@@ -125,7 +125,7 @@ def evaluate( model=None , inp_inmges=None , annotations=None , checkpoints_path
     print("Total  IoU "  ,  np.mean(ious ))
 
 
-def predict_fast( model=None , inp=None):
+def predict_fast( model=None , inp=None, checkpoints_path = None):
 
     if model is None and ( not checkpoints_path is None ):
         model = model_from_checkpoint_path(checkpoints_path)
@@ -137,24 +137,25 @@ def predict_fast( model=None , inp=None):
         inp = cv2.imread(inp )
 
     assert len(inp.shape) == 3 , "Image should be h,w,3 "
-    orininal_h = inp.shape[0]
-    orininal_w = inp.shape[1]
 
     input_width = model.input_width
     input_height = model.input_height
 
     x = get_image_arr( inp , input_width  , input_height , odering=IMAGE_ORDERING )
     pr = model.predict( np.array([x]) )[0]
+    pr_arr = pr.reshape(( model.output_height ,  model.output_width , model.n_classes ) ).argmax( axis=2 )
     
-    return pr
+    return pr_arr
 
 def segmented_image_from_prediction(pr, model = None, n_classes = None, output_width = None, output_height = None, input_shape = None):
+    '''
     if model is not None:
         n_classes = model.n_classes
         output_width = model.output_width
         output_height  = model.output_height
+    '''
     original_h, original_w = input_shape[0:2]
-    pr = pr.reshape(( output_height ,  output_width , n_classes ) ).argmax( axis=2 )
+    #pr = pr.reshape(( output_height ,  output_width , n_classes ) ).argmax( axis=2 )
     seg_img = np.zeros( ( output_height , output_width , 3  ) )
     colors = class_colors
 
