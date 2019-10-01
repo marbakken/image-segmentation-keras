@@ -144,10 +144,9 @@ def predict_fast( model=None , inp=None, checkpoints_path = None):
     x = get_image_arr( inp , input_width  , input_height , odering=IMAGE_ORDERING )
     pr = model.predict( np.array([x]) )[0]
     pr_arr = pr.reshape(( model.output_height ,  model.output_width , model.n_classes ) ).argmax( axis=2 )
-    
-    return pr_arr
+    return pr_arr, inp
 
-def segmented_image_from_prediction(pr, model = None, n_classes = None, output_width = None, output_height = None, input_shape = None):
+def segmented_image_from_prediction(pr, n_classes, input_shape):
     '''
     if model is not None:
         n_classes = model.n_classes
@@ -155,8 +154,7 @@ def segmented_image_from_prediction(pr, model = None, n_classes = None, output_w
         output_height  = model.output_height
     '''
     original_h, original_w = input_shape[0:2]
-    #pr = pr.reshape(( output_height ,  output_width , n_classes ) ).argmax( axis=2 )
-    seg_img = np.zeros( ( output_height , output_width , 3  ) )
+    seg_img = np.zeros( ( pr.shape[0], pr.shape[1], 3  ) )
     colors = class_colors
 
     for c in range(n_classes):
