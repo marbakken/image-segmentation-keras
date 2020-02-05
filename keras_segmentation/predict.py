@@ -14,7 +14,6 @@ import json
 from .models.config import IMAGE_ORDERING
 from . import  metrics 
 from .models import model_from_name
-
 import six
 
 random.seed(0)
@@ -35,6 +34,16 @@ def model_from_checkpoint_path( checkpoints_path, epoch = None):
     model.load_weights(weights_file)
     return model
 
+def model_from_checkpoint_files(config_path, weights_path):
+
+    assert ( os.path.isfile(config_path) ) , "Checkpoint not found."
+    model_config = json.loads(open(config_path , "r" ).read())
+    weights_file = os.path.join(weights_path)
+    assert ( not weights_file is None ) , "Checkpoint not found."
+    model = model_from_name[ model_config['model_class']  ]( model_config['n_classes'] , input_height=model_config['input_height'] , input_width=model_config['input_width'] )
+    print("loaded weights " , weights_file )
+    model.load_weights(weights_file)
+    return model
 
 def predict( model=None , inp=None , out_fname=None , checkpoints_path=None    ):
 
@@ -144,7 +153,7 @@ def predict_fast( model=None , inp=None, checkpoints_path = None):
     x = get_image_arr( inp , input_width  , input_height , odering=IMAGE_ORDERING )
     pr = model.predict( np.array([x]) )[0]
     pr_arr = pr.reshape(( model.output_height ,  model.output_width , model.n_classes ) ).argmax( axis=2 )
-    return pr_arr, inp
+    return pr_arr
 
 def segmented_image_from_prediction(pr, n_classes, input_shape):
     '''
