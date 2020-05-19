@@ -109,6 +109,9 @@ def train( model  ,
     else:
        callbacks = None
        
+    model.fit_generator( train_gen , steps_per_epoch  , epochs=epochs,callbacks=callbacks ) #temporary fix, breaks the start_epoch functionality
+    model.save_weights( checkpoints_path + "." + str( epochs ) )
+    '''
     if not validate:
         for ep in range(start_epoch, start_epoch+epochs ):
             print("Starting Epoch " , ep )
@@ -125,7 +128,7 @@ def train( model  ,
                 model.save_weights( checkpoints_path + "." + str( ep )  )
                 print("saved " , checkpoints_path + ".model." + str( ep ) )
             print("Finished Epoch" , ep )
-
+    '''
 
 
 
