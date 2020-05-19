@@ -1,6 +1,6 @@
 from keras import callbacks as k_callbacks
 import json
-from .data_utils.data_loader import image_segmentation_generator , verify_segmentation_dataset
+from .data_utils.data_loader import image_segmentation_generator , verify_segmentation_dataset, get_pairs_from_paths
 from .models import model_from_name
 import os
 import six
@@ -35,7 +35,7 @@ def train( model  ,
         val_batch_size=2 , 
         auto_resume_checkpoint=False ,
         load_weights=None ,
-        steps_per_epoch=512,
+        steps_per_epoch=None,
         optimizer_name='adadelta',
         logging = False,
     ):
@@ -98,10 +98,15 @@ def train( model  ,
         
 
     train_gen = image_segmentation_generator( train_images , train_annotations ,  batch_size,  n_classes , input_height , input_width , output_height , output_width   )
-
+    if steps_per_epoch is None:
+        steps_per_epoch = len(get_pairs_from_paths(train_images, train_annotations))
+        print('steps per epoch', steps_per_epoch)
 
     if validate:
         val_gen  = image_segmentation_generator( val_images , val_annotations ,  val_batch_size,  n_classes , input_height , input_width , output_height , output_width   )
+        validation_steps = len(get_pairs_from_paths(val_images, val_annotations))
+    else:
+        val_gen = None
 
     if logging:
        tbCallBack = k_callbacks.TensorBoard(histogram_freq=0,log_dir=checkpoints_path)
@@ -109,27 +114,8 @@ def train( model  ,
     else:
        callbacks = None
        
-    model.fit_generator( train_gen , steps_per_epoch  , epochs=epochs,callbacks=callbacks ) #temporary fix, breaks the start_epoch functionality
+    model.fit_generator(train_gen, steps_per_epoch, validation_data = val_gen, validation_steps = validation_steps, epochs=epochs ,callbacks=callbacks ) #temporary fix, breaks the start_epoch functionality
     model.save_weights( checkpoints_path + "." + str( epochs ) )
-    '''
-    if not validate:
-        for ep in range(start_epoch, start_epoch+epochs ):
-            print("Starting Epoch " , ep )
-            model.fit_generator( train_gen , steps_per_epoch  , epochs=1,callbacks=callbacks )
-            if not checkpoints_path is None:
-                model.save_weights( checkpoints_path + "." + str( ep ) )
-                print("saved " , checkpoints_path + ".model." + str( ep ) )
-            print("Finished Epoch" , ep )
-    else:
-        for ep in range(start_epoch, start_epoch+epochs ):
-            print("Starting Epoch " , ep )
-            model.fit_generator( train_gen , steps_per_epoch  , validation_data=val_gen , validation_steps=200 ,  epochs=1,  callbacks=callbacks )
-            if not checkpoints_path is None:
-                model.save_weights( checkpoints_path + "." + str( ep )  )
-                print("saved " , checkpoints_path + ".model." + str( ep ) )
-            print("Finished Epoch" , ep )
-    '''
-
 
 
 
