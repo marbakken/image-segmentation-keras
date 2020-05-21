@@ -13,7 +13,7 @@ import random
 random.seed(0)
 class_colors = [  ( random.randint(0,255),random.randint(0,255),random.randint(0,255)   ) for _ in range(5000)  ]
 
-
+'''
 def get_pairs_from_paths( images_path , segs_path ):
 	images = glob.glob( os.path.join(images_path,"*.jpg")  ) + glob.glob( os.path.join(images_path,"*.png")  ) +  glob.glob( os.path.join(images_path,"*.jpeg")  )
 	segmentations  =  glob.glob( os.path.join(segs_path,"*.png")  ) 
@@ -29,7 +29,22 @@ def get_pairs_from_paths( images_path , segs_path ):
 		ret.append((im , seg) )
 
 	return ret
+'''
+def get_pairs_from_paths( images_path , segs_path ):
+	images = glob.glob( os.path.join(images_path+"*.jpg")  ) + glob.glob( os.path.join(images_path+"*.png")  ) +  glob.glob( os.path.join(images_path+"*.jpeg")  )
+	segmentations  =  glob.glob( os.path.join(segs_path+"*.png")  ) 
 
+	segmentations_d = dict( zip(segmentations,segmentations ))
+
+	ret = []
+
+	for im,seg in zip(images,segmentations):
+		#seg_bnme = os.path.basename(im).replace(".jpg" , ".png").replace(".jpeg" , ".png")
+		#seg = os.path.join( segs_path , seg_bnme  )
+		#assert ( seg in segmentations_d ),  (im + " is present in "+images_path +" but "+seg_bnme+" is not found in "+segs_path + " . Make sure annotation image are in .png"  )
+		ret.append((im , seg) )
+
+	return ret
 
 
 
